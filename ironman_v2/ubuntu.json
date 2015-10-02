@@ -1,0 +1,57 @@
+{
+   "builders": [
+      {
+      	"type": "docker",
+      	"pull": "true",
+      	"image": "{{user `docker-source-image`}}",
+        "name": "ironman_v2",
+      	"commit": true
+      }
+   ],
+   "variables": {
+      "docker-repository": "autobot/ironman",
+      "docker-source-image": "autobot/ironman:latest",
+      "docker-tag": "v2"
+   },
+   "provisioners": [
+      {
+        "inline": [
+           "/usr/bin/apt-get update",
+      	   "apt-get install -y nginx-light"
+        ],
+        "type": "shell"
+      },
+      {
+        "type": "file",
+        "source": "provisioners/files/index.html",
+        "destination": "/usr/share/nginx/html/index.html"
+      },
+      {
+        "type": "file",
+        "source": "provisioners/files/IronManV2.jpg",
+        "destination": "/usr/share/nginx/html/IronManV2.jpg"
+      },
+      {
+        "type": "file",
+        "source": "provisioners/files/nginx-supervisor.conf",
+        "destination": "/etc/supervisor/conf.d/nginx.conf"
+      },
+      {
+        "inline": [
+           "chmod 644 /usr/share/nginx/html/*"
+        ],
+        "type": "shell"
+      }
+   ],
+   "post-processors": [
+     [
+       {
+      	 "type": "docker-tag",
+      	 "repository": "{{user `docker-repository`}}",
+      	 "tag": "{{user `docker-tag`}}",
+         "commit": true
+       },
+       "docker-push"
+     ]
+   ]
+}

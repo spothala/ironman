@@ -1,0 +1,37 @@
+{
+   "builders": [
+      {
+      	"type": "docker",
+      	"pull": "true",
+      	"image": "{{user `docker-source-image`}}",
+        "name": "ubuntu_base",
+      	"commit": true
+      }
+   ],
+   "variables": {
+      "docker-repository": "autobot/ironman",
+      "docker-source-image": "ubuntu:14.04",
+      "docker-tag": "latest"
+   },
+   "provisioners": [
+      {
+        "inline": [
+           "/usr/bin/apt-get update",
+      	   "apt-get install -y build-essential",
+      	   "apt-get install -y software-properties-common supervisor"
+        ],
+        "type": "shell"
+      }
+   ],
+   "post-processors": [
+     [
+       {
+      	 "type": "docker-tag",
+      	 "repository": "{{user `docker-repository`}}",
+      	 "tag": "{{user `docker-tag`}}",
+         "commit": true
+       },
+       "docker-push"
+     ]
+   ]
+}
